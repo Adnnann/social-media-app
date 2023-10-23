@@ -15,6 +15,7 @@ import { useDispatch } from "react-redux";
 import { setLogin } from "state";
 import Dropzone from "react-dropzone";
 import FlexBetween from "components/FlexBetween";
+import axios from "axios";
 
 const registerSchema = yup.object().shape({
   firstName: yup.string().required("required"),
@@ -54,8 +55,10 @@ const Form = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const isLogin = pageType === "login";
   const isRegister = pageType === "register";
+  const [error, setError] = useState(null);
 
   const register = async (values, onSubmitProps) => {
+    console.log(values);
     // this allows us to send form info with image
     const formData = new FormData();
     for (let value in values) {
@@ -64,7 +67,7 @@ const Form = () => {
     formData.append("picturePath", values.picture.name);
 
     const savedUserResponse = await fetch(
-      "http://localhost:3001/auth/register",
+      "http://localhost:5000/auth/register",
       {
         method: "POST",
         body: formData,
@@ -79,22 +82,18 @@ const Form = () => {
   };
 
   const login = async (values, onSubmitProps) => {
-    const loggedInResponse = await fetch("http://localhost:3001/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
-    const loggedIn = await loggedInResponse.json();
-    onSubmitProps.resetForm();
-    if (loggedIn) {
-      dispatch(
-        setLogin({
-          user: loggedIn.user,
-          token: loggedIn.token,
-        })
-      );
-      navigate("/home");
-    }
+    console.log(values);
+    axios
+      .post("http://localhost:5000/auth/login", values)
+      .then((res) => {
+        console.log(res);
+        dispatch(setLogin(res.data));
+        navigate("/home");
+      })
+      .catch((err) => {
+        console.log("err", err.response.data.error);
+        setError(err.response.data.error);
+      });
   };
 
   const handleFormSubmit = async (values, onSubmitProps) => {
@@ -266,6 +265,11 @@ const Form = () => {
                 : "Already have an account? Login here."}
             </Typography>
           </Box>
+          {error && (
+            <Typography style={{ color: "red", textAlign: "center" }}>
+              {error}
+            </Typography>
+          )}
         </form>
       )}
     </Formik>
