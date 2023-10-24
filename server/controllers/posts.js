@@ -92,7 +92,6 @@ export const commentPost = async (req, res) => {
 };
 
 export const deletePost = async (req, res) => {
-
   const { postId } = req.body;
 
   Post.deleteOne({ _id: postId }, async (err) => {
@@ -106,14 +105,4 @@ export const deletePost = async (req, res) => {
   });
 
   //res.status(200).json(updatedPost);
-};
-
-const removeTransaction = (req, res, next) => {
-  let transaction = req.profile;
-  transaction.remove((err) => {
-    if (err) {
-      return res.send({ error: errorHandler.getErrorMessage(err) });
-    }
-    return res.send({ message: "Transaction deleted" });
-  });
 };

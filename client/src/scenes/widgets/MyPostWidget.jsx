@@ -37,6 +37,8 @@ const MyPostWidget = ({ picturePath }) => {
   const mediumMain = palette.neutral.mediumMain;
   const medium = palette.neutral.medium;
 
+  const mode = useSelector((state) => state.mode);
+
   const handlePost = async () => {
     const formData = new FormData();
     formData.append("userId", _id);
@@ -60,7 +62,7 @@ const MyPostWidget = ({ picturePath }) => {
   return (
     <WidgetWrapper>
       <FlexBetween gap="1.5rem">
-        <UserImage image={picturePath} />
+        {isNonMobileScreens && <UserImage image={picturePath} />}
         <InputBase
           placeholder="What's on your mind..."
           onChange={(e) => setPost(e.target.value)}
@@ -158,12 +160,14 @@ const MyPostWidget = ({ picturePath }) => {
           disabled={!post}
           onClick={handlePost}
           sx={{
-            color: "black",
-            backgroundColor: "lightblue",
+            color: mode === "dark" ? "black" : "grey",
+            fontWeight: "bold",
+            backgroundColor: mode == "dark" ? "lightcyan" : "darkcyan",
 
             borderRadius: "3rem",
             padding: "0.5rem 1.5rem",
           }}
+          style={{ color: mode === "dark" ? "black" : "white" }}
         >
           POST
         </Button>

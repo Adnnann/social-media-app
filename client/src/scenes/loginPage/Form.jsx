@@ -28,8 +28,11 @@ const registerSchema = yup.object().shape({
 });
 
 const loginSchema = yup.object().shape({
-  email: yup.string().email("invalid email").required("required"),
-  password: yup.string().required("required"),
+  email: yup.string().email("invalid email").required("Email is required"),
+  password: yup
+    .string()
+    .required("Password is required")
+    .min(6, "Password must be at least 6 characters"),
 });
 
 const initialValuesRegister = {
@@ -91,14 +94,17 @@ const Form = () => {
         navigate("/home");
       })
       .catch((err) => {
-        console.log("err", err.response.data.error);
-        setError(err.response.data.error);
+        console.log(err);
+        setError(err.response.data.msg);
       });
   };
 
+  console.log(error);
   const handleFormSubmit = async (values, onSubmitProps) => {
     if (isLogin) await login(values, onSubmitProps);
     if (isRegister) await register(values, onSubmitProps);
+
+    // onSubmitProps.resetForm();
   };
 
   return (
@@ -106,6 +112,7 @@ const Form = () => {
       onSubmit={handleFormSubmit}
       initialValues={isLogin ? initialValuesLogin : initialValuesRegister}
       validationSchema={isLogin ? loginSchema : registerSchema}
+      enableReinitialize={true}
     >
       {({
         values,
@@ -113,6 +120,8 @@ const Form = () => {
         touched,
         handleBlur,
         handleChange,
+        handleReset,
+
         handleSubmit,
         setFieldValue,
         resetForm,
@@ -217,6 +226,7 @@ const Form = () => {
               error={Boolean(touched.email) && Boolean(errors.email)}
               helperText={touched.email && errors.email}
               sx={{ gridColumn: "span 4" }}
+              onFocus={() => setError(null)}
             />
             <TextField
               label="Password"
@@ -227,10 +237,15 @@ const Form = () => {
               name="password"
               error={Boolean(touched.password) && Boolean(errors.password)}
               helperText={touched.password && errors.password}
+              onFocus={() => setError(null)}
               sx={{ gridColumn: "span 4" }}
             />
           </Box>
-
+          {error && (
+            <Typography style={{ color: "red", textAlign: "center" }}>
+              {error}
+            </Typography>
+          )}
           {/* BUTTONS */}
           <Box>
             <Button
@@ -239,7 +254,7 @@ const Form = () => {
               sx={{
                 m: "2rem 0",
                 p: "1rem",
-                backgroundColor: palette.primary.main,
+                backgroundColor: "darkcyan",
                 color: palette.background.alt,
                 "&:hover": { color: palette.primary.main },
               }}
@@ -253,7 +268,8 @@ const Form = () => {
               }}
               sx={{
                 textDecoration: "underline",
-                color: palette.primary.main,
+                textAlign: "center",
+                color: palette.primary.dark,
                 "&:hover": {
                   cursor: "pointer",
                   color: palette.primary.light,
@@ -265,11 +281,6 @@ const Form = () => {
                 : "Already have an account? Login here."}
             </Typography>
           </Box>
-          {error && (
-            <Typography style={{ color: "red", textAlign: "center" }}>
-              {error}
-            </Typography>
-          )}
         </form>
       )}
     </Formik>

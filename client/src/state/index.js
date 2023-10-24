@@ -22,6 +22,9 @@ export const authSlice = createSlice({
       state.user = null;
       state.token = null;
     },
+    setUserData: (state, action) => {
+      state.user = action.payload;
+    },
     setFriends: (state, action) => {
       if (state.user) {
         state.user.friends = action.payload.friends;
@@ -30,7 +33,9 @@ export const authSlice = createSlice({
       }
     },
     setPosts: (state, action) => {
-      state.posts = action.payload.posts.sort((a,b)=>new Date(b.createdAt) - new Date(a.createdAt));
+      state.posts = action.payload.posts.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
     },
     setPost: (state, action) => {
       const updatedPosts = state.posts.map((post) => {
@@ -42,6 +47,13 @@ export const authSlice = createSlice({
   },
 });
 
-export const { setMode, setLogin, setLogout, setFriends, setPosts, setPost } =
-  authSlice.actions;
+export const {
+  setMode,
+  setLogin,
+  setLogout,
+  setFriends,
+  setPosts,
+  setPost,
+  setUserData,
+} = authSlice.actions;
 export default authSlice.reducer;

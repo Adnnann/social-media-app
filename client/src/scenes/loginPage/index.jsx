@@ -7,25 +7,27 @@ const LoginPage = () => {
   return (
     <Box>
       <Box
-        width="100%"
-        backgroundColor={theme.palette.background.alt}
-        p="1rem 6%"
-        textAlign="center"
-      >
-        <Typography fontWeight="bold" fontSize="32px" color="primary">
-          FriendSphere
-        </Typography>
-      </Box>
-
-      <Box
-        width={isNonMobileScreens ? "50%" : "93%"}
+        width={isNonMobileScreens ? "30%" : "93%"}
         p="2rem"
         m="2rem auto"
         borderRadius="1.5rem"
         backgroundColor={theme.palette.background.alt}
       >
-        <Typography fontWeight="500" variant="h5" sx={{ mb: "1.5rem" }}>
-          Connect with the world, one friend at a time!
+        <Typography
+          fontWeight="bold"
+          fontSize="32px"
+          color="darkcyan"
+          textAlign={"center"}
+          style={{ marginBottom: "1.5rem" }}
+        >
+          EU4Agri Crew
+        </Typography>
+        <Typography
+          fontWeight="500"
+          variant="h3"
+          sx={{ mb: "1.5rem", textAlign: "center" }}
+        >
+          Log In
         </Typography>
         <Form />
       </Box>

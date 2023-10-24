@@ -11,6 +11,7 @@ import WidgetWrapper from "components/WidgetWrapper";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const UserWidget = ({ userId, picturePath }) => {
   const [user, setUser] = useState(null);
@@ -20,6 +21,8 @@ const UserWidget = ({ userId, picturePath }) => {
   const dark = palette.neutral.dark;
   const medium = palette.neutral.medium;
   const main = palette.neutral.main;
+
+  const loggedUser = useSelector((state) => state.user);
 
   const getUser = async () => {
     const response = await fetch(`http://localhost:5000/users/${userId}`, {
@@ -49,14 +52,24 @@ const UserWidget = ({ userId, picturePath }) => {
     friends,
   } = user;
 
+  console.log(loggedUser._id, "visited user", userId);
+
+  const viewUserProfile = () => {
+    const viewerId = loggedUser._id;
+    console.log("viewUserProfile", viewerId);
+    axios.put(`http://localhost:5000/users/${userId}/${viewerId}`, {
+      visitingUserId: loggedUser._id,
+    });
+
+    if (userId !== loggedUser._id) {
+      navigate(`/profile/${userId}`);
+    }
+  };
+
   return (
     <WidgetWrapper>
       {/* FIRST ROW */}
-      <FlexBetween
-        gap="0.5rem"
-        pb="1.1rem"
-        onClick={() => navigate(`/profile/${userId}`)}
-      >
+      <FlexBetween gap="0.5rem" pb="1.1rem" onClick={viewUserProfile}>
         <FlexBetween gap="1rem">
           <UserImage image={picturePath} />
           <Box>
@@ -65,10 +78,13 @@ const UserWidget = ({ userId, picturePath }) => {
               color={dark}
               fontWeight="500"
               sx={{
-                "&:hover": {
-                  color: palette.primary.light,
-                  cursor: "pointer",
-                },
+                "&:hover":
+                  userId !== loggedUser._id
+                    ? {
+                        color: palette.primary.light,
+                        cursor: "pointer",
+                      }
+                    : null,
               }}
             >
               {firstName} {lastName}
@@ -100,7 +116,7 @@ const UserWidget = ({ userId, picturePath }) => {
         <FlexBetween mb="0.5rem">
           <Typography color={medium}>Who's viewed your profile</Typography>
           <Typography color={main} fontWeight="500">
-            {viewedProfile}
+            {viewedProfile.length}
           </Typography>
         </FlexBetween>
         <FlexBetween>
