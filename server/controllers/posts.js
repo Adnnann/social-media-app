@@ -92,10 +92,10 @@ export const commentPost = async (req, res) => {
 };
 
 export const deletePost = async (req, res) => {
-  const { id } = req.params;
-  const { userId } = req.body;
 
-  Post.deleteOne({ userId: userId }, async (err) => {
+  const { postId } = req.body;
+
+  Post.deleteOne({ _id: postId }, async (err) => {
     if (err) {
       return console.log(err);
       // deleted at most one tank document

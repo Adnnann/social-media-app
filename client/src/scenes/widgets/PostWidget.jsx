@@ -19,7 +19,7 @@ import Friend from "components/Friend";
 import WidgetWrapper from "components/WidgetWrapper";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setPost } from "state";
+import { setPost, setPosts } from "state";
 
 const PostWidget = ({
   postId,
@@ -86,11 +86,12 @@ const PostWidget = ({
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId: loggedInUserId }),
+        body: JSON.stringify({ postId: postId }),
       }
     );
-    const updatedPost = await response.json();
-    dispatch(setPost({ post: updatedPost }));
+    const updatedPosts = await response.json();
+    console.log(updatedPosts)
+    dispatch(setPosts({ posts: updatedPosts.posts}));
   };
   return (
     <WidgetWrapper m="2rem 0">

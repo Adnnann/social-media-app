@@ -30,7 +30,7 @@ export const authSlice = createSlice({
       }
     },
     setPosts: (state, action) => {
-      state.posts = action.payload.posts;
+      state.posts = action.payload.posts.sort((a,b)=>new Date(b.createdAt) - new Date(a.createdAt));
     },
     setPost: (state, action) => {
       const updatedPosts = state.posts.map((post) => {
