@@ -85,21 +85,18 @@ const Form = () => {
   };
 
   const login = async (values, onSubmitProps) => {
-    console.log(values);
     axios
       .post("http://localhost:5000/auth/login", values)
       .then((res) => {
-        console.log(res);
         dispatch(setLogin(res.data));
         navigate("/home");
       })
       .catch((err) => {
-        console.log(err);
         setError(err.response.data.msg);
       });
   };
 
-  console.log(error);
+
   const handleFormSubmit = async (values, onSubmitProps) => {
     if (isLogin) await login(values, onSubmitProps);
     if (isRegister) await register(values, onSubmitProps);

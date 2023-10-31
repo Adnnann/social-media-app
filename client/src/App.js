@@ -7,16 +7,26 @@ import { useSelector } from "react-redux";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import { themeSettings } from "./theme";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from 'react-query'
 
 function App() {
   const mode = useSelector((state) => state.mode);
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
   const isAuth = Boolean(useSelector((state) => state.token));
 
+  const queryClient = new QueryClient()
+
   return (
     <div className="app">
       <BrowserRouter>
         <ThemeProvider theme={theme}>
+        <QueryClientProvider client={queryClient}>
           <CssBaseline />
           <Routes>
             <Route path="/" element={<LoginPage />} />
@@ -29,6 +39,7 @@ function App() {
               element={isAuth ? <ProfilePage /> : <Navigate to="/" />}
             />
           </Routes>
+          </QueryClientProvider>
         </ThemeProvider>
       </BrowserRouter>
     </div>
