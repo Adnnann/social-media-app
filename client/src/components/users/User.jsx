@@ -5,15 +5,15 @@ import {
   WorkOutlineOutlined,
 } from "@mui/icons-material";
 import { Box, Typography, Divider, useTheme } from "@mui/material";
-import UserImage from "components/UserImage";
-import FlexBetween from "components/FlexBetween";
-import WidgetWrapper from "components/WidgetWrapper";
+import UserImage from "components/users/UserImage";
+import FlexBetween from "components/utils/FlexBetween";
+import WidgetWrapper from "components/utils/WidgetWrapper";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const UserWidget = ({ userId, picturePath }) => {
+const User = ({ userId, picturePath }) => {
   const [user, setUser] = useState(null);
   const { palette } = useTheme();
   const navigate = useNavigate();
@@ -30,7 +30,6 @@ const UserWidget = ({ userId, picturePath }) => {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await response.json();
-    console.log(data);
     setUser(data);
   };
 
@@ -51,8 +50,6 @@ const UserWidget = ({ userId, picturePath }) => {
     impressions,
     friends,
   } = user;
-
-  console.log(loggedUser._id, "visited user", userId);
 
   const viewUserProfile = () => {
     const viewerId = loggedUser._id;
@@ -89,7 +86,7 @@ const UserWidget = ({ userId, picturePath }) => {
             >
               {firstName} {lastName}
             </Typography>
-            <Typography color={medium}>{friends.length} friends</Typography>
+            <Typography color={medium}>{/*friends.length*/} friends</Typography>
           </Box>
         </FlexBetween>
         <ManageAccountsOutlined />
@@ -116,7 +113,7 @@ const UserWidget = ({ userId, picturePath }) => {
         <FlexBetween mb="0.5rem">
           <Typography color={medium}>Who's viewed your profile</Typography>
           <Typography color={main} fontWeight="500">
-            {viewedProfile.length}
+            {/*viewedProfile.length*/}
           </Typography>
         </FlexBetween>
         <FlexBetween>
@@ -165,4 +162,4 @@ const UserWidget = ({ userId, picturePath }) => {
   );
 };
 
-export default UserWidget;
+export default User;

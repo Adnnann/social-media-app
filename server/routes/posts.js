@@ -15,9 +15,9 @@ router.get("/", verifyToken, getFeedPosts);
 router.get("/:userId/posts", verifyToken, getUserPosts);
 
 /* UPDATE */
-router.patch("/:id/like", verifyToken, likePost);
+router.patch("/:postId/like", verifyToken, likePost);
 router.patch("/:id/comment", verifyToken, commentPost);
 
-router.delete("/:id/deletePost", verifyToken, deletePost);
+router.delete("/:postId/deletePost", verifyToken, deletePost);
 
 export default router;

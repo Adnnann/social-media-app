@@ -5,6 +5,7 @@ import User from "../models/User.js";
 export const createPost = async (req, res) => {
   try {
     const { userId, description, picturePath } = req.body;
+
     const user = await User.findById(userId);
     const newPost = new Post({
       userId,
@@ -19,7 +20,8 @@ export const createPost = async (req, res) => {
     });
     await newPost.save();
 
-    const post = await Post.find();
+    const post = await Post.find({});
+
     res.status(201).json(post);
   } catch (err) {
     res.status(409).json({ message: err.message });
@@ -30,7 +32,7 @@ export const createPost = async (req, res) => {
 export const getFeedPosts = async (req, res) => {
   try {
     const post = await Post.find();
-    console.log(post);
+
     res.status(200).json(post);
   } catch (err) {
     res.status(404).json({ message: err.message });
@@ -50,9 +52,9 @@ export const getUserPosts = async (req, res) => {
 /* UPDATE */
 export const likePost = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { postId } = req.params;
     const { userId } = req.body;
-    const post = await Post.findById(id);
+    const post = await Post.findById(postId);
     const isLiked = post.likes.get(userId);
 
     if (isLiked) {
@@ -62,7 +64,7 @@ export const likePost = async (req, res) => {
     }
 
     const updatedPost = await Post.findByIdAndUpdate(
-      id,
+      postId,
       { likes: post.likes },
       { new: true }
     );
@@ -74,15 +76,27 @@ export const likePost = async (req, res) => {
 };
 
 export const commentPost = async (req, res) => {
+  console.log(req);
   try {
     const { id } = req.params;
     const { userId, comment } = req.body;
     const post = await Post.findById(id);
-    const comments = post.comments;
-    comments.push({ userId, comment });
+    const user = await User.findById(userId);
+
+    console.log("post", post);
+
+    const newComment = post.comments;
+
+    newComment.push({
+      userId,
+      comment,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    });
+
     const updatedPost = await Post.findByIdAndUpdate(
       id,
-      { comments },
+      { comments: newComment },
       { new: true }
     );
     res.status(200).json(updatedPost);
@@ -92,7 +106,7 @@ export const commentPost = async (req, res) => {
 };
 
 export const deletePost = async (req, res) => {
-  const { postId } = req.body;
+  const { postId } = req.params;
 
   Post.deleteOne({ _id: postId }, async (err) => {
     if (err) {

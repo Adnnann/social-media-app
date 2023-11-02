@@ -1,34 +1,38 @@
 import { Box, Typography, useTheme } from "@mui/material";
-import Friend from "components/Friend";
-import WidgetWrapper from "components/WidgetWrapper";
+import Friend from "components/users/Friend";
+import WidgetWrapper from "components/utils/WidgetWrapper";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setFriends } from "state";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getFriends } from "api/friendsMutations";
 
-const FriendListWidget = ({ userId }) => {
+const FriendList = () => {
   const dispatch = useDispatch();
   const { palette } = useTheme();
   const token = useSelector((state) => state.token);
-  const friends = useSelector((state) => state.user.friends);
+  const userId = useSelector((state) => state.user._id);
 
-  console.log(friends);
+  const {
+    data: friends,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["friends"],
+    queryFn: () => getFriends(userId, token),
+    onSuccess: (data) => {
+      dispatch(setFriends(data));
+    },
+  });
 
-  const getFriends = async () => {
-    const response = await fetch(
-      `http://localhost:5000/users/${userId}/friends`,
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    const data = await response.json();
-    console.log(data);
-    dispatch(setFriends({ friends: data }));
-  };
+  if (isError) {
+    return <div>{error.message}</div>;
+  }
 
-  useEffect(() => {
-    getFriends();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <WidgetWrapper>
@@ -57,4 +61,4 @@ const FriendListWidget = ({ userId }) => {
   );
 };
 
-export default FriendListWidget;
+export default FriendList;

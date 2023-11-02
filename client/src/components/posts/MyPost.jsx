@@ -17,15 +17,18 @@ import {
   IconButton,
   useMediaQuery,
 } from "@mui/material";
-import FlexBetween from "components/FlexBetween";
+import FlexBetween from "components/utils/FlexBetween";
 import Dropzone from "react-dropzone";
-import UserImage from "components/UserImage";
-import WidgetWrapper from "components/WidgetWrapper";
+import UserImage from "components/users/UserImage";
+import WidgetWrapper from "components/utils/WidgetWrapper";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts } from "state";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { createPost } from "api/postsMutations";
+import CircularProgress from "@mui/material/CircularProgress";
 
-const MyPostWidget = ({ picturePath }) => {
+const MyPost = ({ picturePath }) => {
   const dispatch = useDispatch();
   const [isImage, setIsImage] = useState(false);
   const [image, setImage] = useState(null);
@@ -37,9 +40,26 @@ const MyPostWidget = ({ picturePath }) => {
   const mediumMain = palette.neutral.mediumMain;
   const medium = palette.neutral.medium;
 
+  const queryClient = useQueryClient();
+
   const mode = useSelector((state) => state.mode);
 
-  const handlePost = async () => {
+  const {
+    mutate: submitPost,
+    isPending,
+    isSuccess,
+  } = useMutation({
+    mutationKey: "posts",
+    invalidatesTags: ["posts"],
+    mutationFn: (data) => createPost(data),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries("posts");
+      setPost("");
+    },
+  });
+
+  const handlePost = () => {
     const formData = new FormData();
     formData.append("userId", _id);
     formData.append("description", post);
@@ -48,15 +68,14 @@ const MyPostWidget = ({ picturePath }) => {
       formData.append("picturePath", image.name);
     }
 
-    const response = await fetch(`http://localhost:5000/posts`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-    const posts = await response.json();
-    dispatch(setPosts({ posts }));
-    setImage(null);
-    setPost("");
+    const data = {
+      userId: _id,
+      description: post,
+      picturePath: image ? image.name : "",
+      token: token,
+    };
+
+    submitPost(data);
   };
 
   return (
@@ -176,4 +195,4 @@ const MyPostWidget = ({ picturePath }) => {
   );
 };
 
-export default MyPostWidget;
+export default MyPost;

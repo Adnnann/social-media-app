@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -12,10 +12,12 @@ import { Formik } from "formik";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { setLogin } from "state";
 import Dropzone from "react-dropzone";
-import FlexBetween from "components/FlexBetween";
+import FlexBetween from "components/utils/FlexBetween";
 import axios from "axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { login, register } from "api/authMutations";
+import { setFriends, setToken, setUser } from "state";
 
 const registerSchema = yup.object().shape({
   firstName: yup.string().required("required"),
@@ -51,6 +53,7 @@ const initialValuesLogin = {
 };
 
 const Form = () => {
+  const queryClient = useQueryClient();
   const [pageType, setPageType] = useState("login");
   const { palette } = useTheme();
   const dispatch = useDispatch();
@@ -58,54 +61,52 @@ const Form = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const isLogin = pageType === "login";
   const isRegister = pageType === "register";
-  const [error, setError] = useState(null);
+  // const [error, setError] = useState(null);
 
-  const register = async (values, onSubmitProps) => {
-    console.log(values);
-    // this allows us to send form info with image
-    const formData = new FormData();
-    for (let value in values) {
-      formData.append(value, values[value]);
-    }
-    formData.append("picturePath", values.picture.name);
+  const {
+    mutate: loginUser,
+    isSuccess,
+    isError,
+    error,
+    data: loginData,
+  } = useMutation({
+    mutationKey: "login",
+    mutationFn: async (values, onSubmitProps) => login(values, onSubmitProps),
+    onSuccess: (data) => {
+      console.log(data);
+      queryClient.invalidateQueries("user");
+    },
+  });
 
-    const savedUserResponse = await fetch(
-      "http://localhost:5000/auth/register",
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-    const savedUser = await savedUserResponse.json();
-    onSubmitProps.resetForm();
+  const { mutate: registerUser } = useMutation({
+    mutationKey: "register",
+    mutationFn: async (values, onSubmitProps) => {
+      register(values, onSubmitProps);
+    },
 
-    if (savedUser) {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries("user");
       setPageType("login");
+    },
+  });
+
+  useEffect(() => {
+    if (isSuccess) {
+      dispatch(setToken(loginData.token));
+      dispatch(setUser(loginData.user));
+      dispatch(setFriends(loginData.user.friends));
+      navigate("/home");
     }
-  };
+  }, [isSuccess, navigate]);
 
-  const login = async (values, onSubmitProps) => {
-    console.log(values);
-    axios
-      .post("http://localhost:5000/auth/login", values)
-      .then((res) => {
-        console.log(res);
-        dispatch(setLogin(res.data));
-        navigate("/home");
-      })
-      .catch((err) => {
-        console.log(err);
-        setError(err.response.data.msg);
-      });
-  };
-
-  console.log(error);
   const handleFormSubmit = async (values, onSubmitProps) => {
-    if (isLogin) await login(values, onSubmitProps);
-    if (isRegister) await register(values, onSubmitProps);
+    if (isLogin) loginUser(values, onSubmitProps);
+    if (isRegister) registerUser(values, onSubmitProps);
 
     // onSubmitProps.resetForm();
   };
+
+  isError && console.log(isError);
 
   return (
     <Formik
@@ -226,7 +227,7 @@ const Form = () => {
               error={Boolean(touched.email) && Boolean(errors.email)}
               helperText={touched.email && errors.email}
               sx={{ gridColumn: "span 4" }}
-              onFocus={() => setError(null)}
+              //  onFocus={() => setError(null)}
             />
             <TextField
               label="Password"
@@ -237,13 +238,12 @@ const Form = () => {
               name="password"
               error={Boolean(touched.password) && Boolean(errors.password)}
               helperText={touched.password && errors.password}
-              onFocus={() => setError(null)}
               sx={{ gridColumn: "span 4" }}
             />
           </Box>
-          {error && (
+          {isError && (
             <Typography style={{ color: "red", textAlign: "center" }}>
-              {error}
+              {error.response.data.error}
             </Typography>
           )}
           {/* BUTTONS */}

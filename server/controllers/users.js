@@ -33,12 +33,14 @@ export const getUserFriends = async (req, res) => {
 /* UPDATE */
 export const addRemoveFriend = async (req, res) => {
   try {
-    const { _id, friendId } = req.params;
+    const { userId, friendId } = req.params;
 
-    console.log(_id, friendId);
+    const user = await User.findById(userId);
 
-    const user = await User.findById(_id);
     const friend = await User.findById(friendId);
+
+    console.log("user", user);
+    console.log("friend", friend);
 
     if (user.friends.filter((user) => user._id === friendId).length > 0) {
       user.friends = user.friends.filter((user) => user._id !== friendId);
@@ -76,7 +78,6 @@ export const viewProfile = async (req, res) => {
       user.viewedProfile.filter((user) => user._id.toString() === userId)
         .length > 0
     ) {
-      console.log("already viewed profile");
       user.viewedProfile = user.viewedProfile;
     } else {
       user.viewedProfile = [...user.viewedProfile, viewerProfile];
