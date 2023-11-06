@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { token } from "morgan";
 
 /* REGISTER USER */
 export const register = async (req, res) => {
@@ -49,13 +50,17 @@ export const login = async (req, res) => {
         .json({ error: "Password or email do not match. " });
     }
 
-    // const isMatch = await bcrypt.compare(password, user.password);
-    // if (!isMatch)
-    //   return res.status(401).json({ msg: "Password or email do not match. " });
+    delete user.password;
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-    delete user.password;
-    res.status(200).json({ token, user });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+
+    return res.status(200).json({ user, token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

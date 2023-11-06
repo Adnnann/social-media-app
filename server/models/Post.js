@@ -19,14 +19,121 @@ const postSchema = mongoose.Schema(
     picturePath: String,
     userPicturePath: String,
     likes: {
-      type: Map,
-      of: Boolean,
+      type: Array,
+      default: [
+        {
+          userId: {
+            type: String,
+            required: true,
+          },
+          firstName: {
+            type: String,
+            required: true,
+          },
+          lastName: {
+            type: String,
+            required: true,
+          },
+          createdAt: {
+            type: Date,
+            default: Date.now(),
+          },
+        },
+      ],
     },
     comments: {
       type: Array,
-      default: [],
+      required: true,
+      default: [
+        {
+          userId: {
+            type: String,
+            required: true,
+          },
+          firstName: {
+            type: String,
+            required: true,
+          },
+          lastName: {
+            type: String,
+            required: true,
+          },
+          content: {
+            type: String,
+            required: true,
+          },
+          picturePath: String,
+          createdAt: {
+            type: Date,
+            default: Date.now(),
+          },
+          likes: {
+            type: Array,
+            required: true,
+            default: [
+              {
+                userId: {
+                  type: String,
+                  required: true,
+                  default: "",
+                },
+                firstName: {
+                  type: String,
+                  required: true,
+                  default: "",
+                },
+                lastName: {
+                  type: String,
+                  required: true,
+                  default: "",
+                },
+                picturePath: {
+                  type: String,
+                  required: true,
+                  default: "",
+                },
+                createdAt: {
+                  type: Date,
+                  default: Date.now(),
+                },
+              },
+            ],
+          },
+          replies: {
+            type: Array,
+            required: true,
+            default: [
+              {
+                userId: {
+                  type: String,
+                  required: true,
+                  default: "",
+                },
+                firstName: {
+                  type: String,
+                  required: true,
+                },
+                lastName: {
+                  type: String,
+                  required: true,
+                },
+                content: {
+                  type: String,
+                  required: true,
+                },
+                picturePath: String,
+                createdAt: {
+                  type: Date,
+                  default: Date.now(),
+                },
+              },
+            ],
+          },
+        },
+      ],
     },
   },
+
   { timestamps: true }
 );
 

@@ -2,18 +2,20 @@ import { PersonAddOutlined, PersonRemoveOutlined } from "@mui/icons-material";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setFriends, setUserData } from "state";
+import { getUserId, setFriends, setUserData } from "state/userReducer";
 import FlexBetween from "../utils/FlexBetween";
 import UserImage from "./UserImage";
 import { addFriendMutation } from "api/friendsMutations";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
+import { getToken } from "state/authReducer";
 
-const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
+const Friend = ({ friendId, name, subtitle, userPicturePath, id }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const userId = useSelector((state) => state.user._id);
-  const token = useSelector((state) => state.token);
-  const friends = useSelector((state) => state.friends);
+  const userId = useSelector(getUserId);
+  const friendsIDs = useSelector((state) => state.user.friendIDs);
+
+  let isFriend = friendsIDs.includes(friendId);
 
   const { palette } = useTheme();
   const primaryLight = palette.primary.light;
@@ -21,25 +23,16 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
   const main = palette.neutral.main;
   const medium = palette.neutral.medium;
 
-  const isFriend =
-    friends && friends.length > 0
-      ? Boolean(friends.find((friend) => friend._id === friendId))
-      : false;
-
-  console.log(isFriend, friendId);
-
   const {
     mutate: addFriend,
     isError,
     error,
-    isSuccess,
   } = useMutation({
     mutationKey: "friends",
     invalidatesTags: ["friends"],
-    mutationFn: () => addFriendMutation(userId, friendId, token),
+    mutationFn: () => addFriendMutation(userId, friendId),
 
     onSuccess: (data) => {
-      console.log("data", data);
       dispatch(setUserData(data));
       dispatch(setFriends(data.friends));
     },
@@ -77,7 +70,7 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
           </Typography>
         </Box>
       </FlexBetween>
-      {friendId !== userId && (
+      {friendId !== userId && window.location.pathname !== "/messages" ? (
         <IconButton
           onClick={() => addFriend()}
           sx={{ backgroundColor: primaryLight, p: "0.6rem" }}
@@ -88,7 +81,7 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
             <PersonAddOutlined sx={{ color: primaryDark }} />
           )}
         </IconButton>
-      )}
+      ) : null}
     </FlexBetween>
   );
 };

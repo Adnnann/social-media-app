@@ -12,7 +12,7 @@ export default function CommentAndDeletePosts({
   postUserId,
 }) {
   return (
-    <FlexBetween gap="0.3rem">
+    <>
       <IconButton onClick={openCommentSection}>
         <ChatBubbleOutlineOutlined />
       </IconButton>
@@ -21,6 +21,6 @@ export default function CommentAndDeletePosts({
           <DeleteOutlineOutlined fontSize="medium" />
         </IconButton>
       )}
-    </FlexBetween>
+    </>
   );
 }

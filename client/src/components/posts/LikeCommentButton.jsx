@@ -1,22 +1,33 @@
 import FlexBetween from "components/utils/FlexBetween";
-import { IconButton, Typography } from "@mui/material";
-import { FavoriteBorderOutlined, FavoriteOutlined } from "@mui/icons-material";
+import { Badge, IconButton, Typography } from "@mui/material";
+import {
+  Favorite,
+  FavoriteBorderOutlined,
+  FavoriteOutlined,
+} from "@mui/icons-material";
 export default function LikeCommentButton({
   likeComment,
-  color,
   isLiked,
   likeCount,
+  comment,
+  color,
 }) {
   return (
-    <FlexBetween gap="0.3rem">
+    <>
       <IconButton onClick={likeComment}>
-        {isLiked ? (
-          <FavoriteOutlined sx={{ color: color }} />
-        ) : (
-          <FavoriteBorderOutlined />
-        )}
+        <IconButton
+          style={{
+            marginLeft: "20px",
+          }}
+        >
+          <Badge badgeContent={likeCount} overlap="rectangular">
+            <Favorite
+              fontSize="large"
+              color={likeCount > 0 ? "secondary" : "disabled"}
+            />
+          </Badge>
+        </IconButton>
       </IconButton>
-      <Typography>{likeCount}</Typography>
-    </FlexBetween>
+    </>
   );
 }

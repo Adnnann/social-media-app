@@ -1,17 +1,13 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000";
-
 export const getPostsApi = async (token) => {
-  const response = await axios(`${API_URL}/posts`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await axios(`/posts`);
   return response.data;
 };
 
 export const getUserPosts = async (token, userId) => {
-  const response = await axios(`${API_URL}/posts/${userId}/posts`, {
-    headers: { Authorization: `Bearer ${token}` },
+  const response = await axios(`/posts/${userId}/posts`, {
+    withCredentials: true,
   });
   return response.data;
 };

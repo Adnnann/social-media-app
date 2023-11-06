@@ -9,26 +9,52 @@ const seedPosts = async () => {
 
   let posts = [];
 
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < 100; i++) {
+    let commentUser = users[Math.floor(Math.random() * users.length)];
+    let commentLikesUser = users[Math.floor(Math.random() * users.length)];
+    let repliesUser = users[Math.floor(Math.random() * users.length)];
+
     posts.push({
-      userId: users[Math.floor(Math.random() * users.length)]._id,
-      firstName: users[Math.floor(Math.random() * users.length)].firstName,
-      lastName: users[Math.floor(Math.random() * users.length)].lastName,
-      location: users[Math.floor(Math.random() * users.length)].location,
+      userId: users[i]._id,
+      firstName: users[i].firstName,
+      lastName: users[i].lastName,
+      location: users[i].location,
       description: "This is a test post",
-      userPicturePath:
-        users[Math.floor(Math.random() * users.length)].picturePath,
+      userPicturePath: users[i].picturePath,
       picturePath: "post1.jpeg",
-      likes: new Map([
-        [users[Math.floor(Math.random() * users.length)]._id, true],
-        [users[Math.floor(Math.random() * users.length)]._id, true],
-      ]),
-      comments: [
+      likes: [
         {
           userId: users[Math.floor(Math.random() * users.length)]._id,
           firstName: users[Math.floor(Math.random() * users.length)].firstName,
           lastName: users[Math.floor(Math.random() * users.length)].lastName,
-          comment: `This is a ${i} test comment from ${users.firstName}`,
+        },
+      ],
+      comments: [
+        {
+          userId: commentUser._id,
+          firstName: commentUser.firstName,
+          lastName: commentUser.lastName,
+          content: `This is a ${i} test comment from ${commentUser.firstName}`,
+          picturePath: commentUser.picturePath,
+
+          likes: [
+            {
+              userId: commentLikesUser._id,
+              firstName: commentLikesUser.firstName,
+              lastName: commentLikesUser.lastName,
+              picturePath: commentUser.picturePath,
+            },
+          ],
+
+          replies: [
+            {
+              userId: repliesUser._id,
+              firstName: repliesUser.firstName,
+              lastName: repliesUser.lastName,
+              content: `This is a ${i} test reply from ${repliesUser.firstName}`,
+              picturePath: repliesUser.picturePath,
+            },
+          ],
         },
       ],
     });
@@ -59,7 +85,6 @@ mongoose
           console.log(err);
         });
     });
-    console.log("Posts added");
   })
 
   .catch((err) => {

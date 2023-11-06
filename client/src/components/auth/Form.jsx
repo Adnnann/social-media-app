@@ -14,10 +14,10 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import Dropzone from "react-dropzone";
 import FlexBetween from "components/utils/FlexBetween";
-import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { login, register } from "api/authMutations";
-import { setFriends, setToken, setUser } from "state";
+import { setToken } from "state/authReducer";
+import { setFriends, setUserData } from "state/userReducer";
 
 const registerSchema = yup.object().shape({
   firstName: yup.string().required("required"),
@@ -73,7 +73,7 @@ const Form = () => {
     mutationKey: "login",
     mutationFn: async (values, onSubmitProps) => login(values, onSubmitProps),
     onSuccess: (data) => {
-      console.log(data);
+      dispatch(setUserData(data.user));
       queryClient.invalidateQueries("user");
     },
   });
@@ -93,8 +93,8 @@ const Form = () => {
   useEffect(() => {
     if (isSuccess) {
       dispatch(setToken(loginData.token));
-      dispatch(setUser(loginData.user));
       dispatch(setFriends(loginData.user.friends));
+
       navigate("/home");
     }
   }, [isSuccess, navigate]);
@@ -105,8 +105,6 @@ const Form = () => {
 
     // onSubmitProps.resetForm();
   };
-
-  isError && console.log(isError);
 
   return (
     <Formik

@@ -22,20 +22,20 @@ import Dropzone from "react-dropzone";
 import UserImage from "components/users/UserImage";
 import WidgetWrapper from "components/utils/WidgetWrapper";
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setPosts } from "state";
+import { useSelector } from "react-redux";
+
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { createPost } from "api/postsMutations";
-import CircularProgress from "@mui/material/CircularProgress";
+import { getToken } from "state/authReducer";
+import { getUserId } from "state/userReducer";
 
 const MyPost = ({ picturePath }) => {
-  const dispatch = useDispatch();
   const [isImage, setIsImage] = useState(false);
   const [image, setImage] = useState(null);
   const [post, setPost] = useState("");
   const { palette } = useTheme();
-  const { _id } = useSelector((state) => state.user);
-  const token = useSelector((state) => state.token);
+  const userId = useSelector(getUserId);
+  const token = useSelector(getToken);
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
   const mediumMain = palette.neutral.mediumMain;
   const medium = palette.neutral.medium;
@@ -61,7 +61,7 @@ const MyPost = ({ picturePath }) => {
 
   const handlePost = () => {
     const formData = new FormData();
-    formData.append("userId", _id);
+    formData.append("userId", userId);
     formData.append("description", post);
     if (image) {
       formData.append("picture", image);
@@ -69,7 +69,7 @@ const MyPost = ({ picturePath }) => {
     }
 
     const data = {
-      userId: _id,
+      userId: userId,
       description: post,
       picturePath: image ? image.name : "",
       token: token,

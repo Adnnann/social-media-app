@@ -12,24 +12,28 @@ import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getUserId } from "state/userReducer";
+import { getToken } from "state/authReducer";
 
-const User = ({ userId, picturePath }) => {
+const User = ({ picturePath }) => {
   const [user, setUser] = useState(null);
   const { palette } = useTheme();
   const navigate = useNavigate();
-  const token = useSelector((state) => state.token);
+  const token = useSelector(getToken);
   const dark = palette.neutral.dark;
   const medium = palette.neutral.medium;
   const main = palette.neutral.main;
+  const userId = useSelector(getUserId);
 
-  const loggedUser = useSelector((state) => state.user);
+  console.log(userId);
+
+  const viewerId = useSelector(getUserId);
 
   const getUser = async () => {
-    const response = await fetch(`http://localhost:5000/users/${userId}`, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
+    const response = await axios.get(`/users/${userId}`, {
+      withCredentials: true,
     });
-    const data = await response.json();
+    const data = await response.data;
     setUser(data);
   };
 
@@ -41,24 +45,14 @@ const User = ({ userId, picturePath }) => {
     return null;
   }
 
-  const {
-    firstName,
-    lastName,
-    location,
-    occupation,
-    viewedProfile,
-    impressions,
-    friends,
-  } = user;
+  const { firstName, lastName, location, occupation, impressions } = user;
 
   const viewUserProfile = () => {
-    const viewerId = loggedUser._id;
-    console.log("viewUserProfile", viewerId);
     axios.put(`http://localhost:5000/users/${userId}/${viewerId}`, {
-      visitingUserId: loggedUser._id,
+      visitingUserId: viewerId,
     });
 
-    if (userId !== loggedUser._id) {
+    if (userId !== viewerId) {
       navigate(`/profile/${userId}`);
     }
   };
@@ -76,7 +70,7 @@ const User = ({ userId, picturePath }) => {
               fontWeight="500"
               sx={{
                 "&:hover":
-                  userId !== loggedUser._id
+                  userId !== viewerId
                     ? {
                         color: palette.primary.light,
                         cursor: "pointer",

@@ -2,7 +2,9 @@ import axios from "axios";
 import config from "./apiConfig";
 
 export const login = async (values, onSubmitProps) => {
-  const response = await axios.post(`${config.baseUrl}/auth/login`, values);
+  const response = await axios.post(`/auth/login`, values, {
+    withCredentials: true,
+  });
 
   return response.data;
 };
@@ -14,9 +16,6 @@ export const register = async (values, onSubmitProps) => {
   }
   formData.append("picturePath", values.picture.name);
 
-  const response = await axios.post(
-    `${config.baseUrl}/auth/register`,
-    formData
-  );
+  const response = await axios.post(`/auth/register`, formData);
   return response.data;
 };

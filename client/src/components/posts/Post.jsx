@@ -1,25 +1,11 @@
-import {
-  ChatBubbleOutlineOutlined,
-  FavoriteBorderOutlined,
-  FavoriteOutlined,
-  ShareOutlined,
-  DeleteOutlined,
-} from "@mui/icons-material";
-import {
-  Box,
-  Button,
-  Divider,
-  IconButton,
-  TextField,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { ShareOutlined, QuestionAnswerOutlined } from "@mui/icons-material";
+import { IconButton, Typography, useTheme } from "@mui/material";
 import FlexBetween from "components/utils/FlexBetween";
 import Friend from "components/users/Friend";
 import WidgetWrapper from "components/utils/WidgetWrapper";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setPost, setPosts } from "state";
+import { getUserId, setChatParams, setMessages } from "state/userReducer";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   commentPostMutation,
@@ -31,6 +17,11 @@ import LikeCommentButton from "./LikeCommentButton";
 import CommentPost from "./CommentPosts";
 import CommentAndDeletePosts from "./CommentAndDeleteButtons";
 
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { getToken } from "state/authReducer";
+import { getPostsApi } from "api/postsQuery";
+
 const Post = ({
   postId,
   postUserId,
@@ -41,10 +32,15 @@ const Post = ({
   userPicturePath,
   likes,
   comments,
+  socket,
+  likesCount,
 }) => {
-  const token = useSelector((state) => state.token);
-  const userId = useSelector((state) => state.user._id);
+  const token = useSelector(getToken);
+  const userId = useSelector(getUserId);
   const queryClient = useQueryClient();
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const isLiked = Boolean(likes[userId]);
   const likeCount = Object.keys(likes).length;
@@ -68,19 +64,18 @@ const Post = ({
   const { mutate: like } = useMutation({
     mutationKey: "posts",
     invalidatesTags: ["posts"],
-    mutationFn: () => likePost(token, postId, userId),
+    mutationFn: () => likePost(postId, userId),
     onSuccess: () => {
       queryClient.invalidateQueries("posts");
     },
   });
 
-  const { mutate: commentPost } = useMutation({
+  const { mutate: commentPost, isSuccess: isSuccessComment } = useMutation({
     mutationKey: "posts",
     invalidatesTags: ["posts"],
     mutationFn: async () => {
       if (comment.length === 0) return;
-
-      return await commentPostMutation(token, postId, userId, comment);
+      return await commentPostMutation(postId, userId, comment);
     },
 
     onSuccess: (data) => {
@@ -98,6 +93,43 @@ const Post = ({
     setIsComments(!isComments);
   };
 
+  const startChat = async () => {
+    dispatch(setChatParams({ receiverId: postUserId, senderId: userId }));
+
+    try {
+      const response = await axios.get(
+        `/chat/${userId}/${postUserId}/receiveMessage`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.length === 0) {
+        dispatch(setMessages([]));
+        navigate(`/chat/${userId}`);
+      } else {
+        dispatch(setMessages(response.data));
+        navigate(`/chat/${userId}`);
+      }
+
+      socket.emit("create-room", `room-${userId}-${postUserId}`);
+
+      socket.emit("join", { userId, postUserId });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  let replies = [];
+  for (let i = 0; i < 2; i++) {
+    replies.push({
+      firstName: "John",
+      lastName: "Doe",
+      content: "Hello",
+      picturePath: "p7.jpeg",
+    });
+  }
+
   return (
     <WidgetWrapper m="2rem 0">
       <Friend
@@ -106,6 +138,7 @@ const Post = ({
         subtitle={location}
         userPicturePath={userPicturePath}
       />
+
       <Typography color={main} sx={{ mt: "1rem" }}>
         {description}
       </Typography>
@@ -128,11 +161,16 @@ const Post = ({
           />
           {postUserId !== userId && (
             <LikeCommentButton
-              likeComment={() => like(token)}
+              likeComment={() => like(postId, userId)}
               color={isLiked ? primary : main}
               isLiked={isLiked}
               likeCount={likeCount}
             />
+          )}
+          {userId !== postUserId && (
+            <IconButton onClick={startChat}>
+              <QuestionAnswerOutlined />
+            </IconButton>
           )}
         </FlexBetween>
 
@@ -148,6 +186,8 @@ const Post = ({
           comments={comments}
           name={name}
           main={main}
+          replies={replies}
+          like={like}
         />
       )}
     </WidgetWrapper>

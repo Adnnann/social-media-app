@@ -7,15 +7,16 @@ import FriendList from "components/users/FriendList";
 import MyPost from "components/posts/MyPost";
 import Posts from "components/posts/Posts";
 import User from "components/users/User";
+import { getToken } from "state/authReducer";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const { userId } = useParams();
-  const token = useSelector((state) => state.token);
+  const token = useSelector(getToken);
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
 
   const getUser = async () => {
-    const response = await fetch(`http://localhost:5000/users/${userId}`, {
+    const response = await fetch(`/users/${userId}`, {
       method: "GET",
       headers: { Authorization: `Bearer ${token}` },
     });

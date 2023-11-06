@@ -1,3 +1,4 @@
+import { jwtDecode } from "jwt-decode";
 import Post from "../models/Post.js";
 import User from "../models/User.js";
 
@@ -41,7 +42,7 @@ export const getFeedPosts = async (req, res) => {
 
 export const getUserPosts = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = jwtDecode(req.cookies.token).id;
     const post = await Post.find({ userId });
     res.status(200).json(post);
   } catch (err) {
@@ -52,20 +53,46 @@ export const getUserPosts = async (req, res) => {
 /* UPDATE */
 export const likePost = async (req, res) => {
   try {
-    const { postId } = req.params;
-    const { userId } = req.body;
+    const { postId } = req.body;
+    const userId = jwtDecode(req.cookies.token).id;
     const post = await Post.findById(postId);
-    const isLiked = post.likes.get(userId);
+
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    let isLiked = false;
+    const objectLikes = post.likes.filter((item) => typeof item === "object");
+
+    if (post?.likes && post?.likes?.length > 0) {
+      console.log("objectLikes", objectLikes);
+      isLiked =
+        objectLikes.filter((item) => item.userId.toString() === userId).length >
+        0
+          ? true
+          : false;
+    }
+
+    const user = await User.findById(userId);
+
+    let likes = post.likes;
 
     if (isLiked) {
-      post.likes.delete(userId);
+      likes = [
+        ...objectLikes.filter((item) => item.userId.toString() !== userId),
+      ];
     } else {
-      post.likes.set(userId, true);
+      likes.push({
+        userId: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        picturePath: user.picturePath,
+        createdAt: Date.now(),
+      });
+      console.log(likes);
     }
 
     const updatedPost = await Post.findByIdAndUpdate(
       postId,
-      { likes: post.likes },
+      { likes: likes },
       { new: true }
     );
 
@@ -76,22 +103,21 @@ export const likePost = async (req, res) => {
 };
 
 export const commentPost = async (req, res) => {
-  console.log(req);
   try {
     const { id } = req.params;
-    const { userId, comment } = req.body;
+    const userId = jwtDecode(req.cookies.token).id;
+    const { comment } = req.body;
     const post = await Post.findById(id);
     const user = await User.findById(userId);
-
-    console.log("post", post);
 
     const newComment = post.comments;
 
     newComment.push({
       userId,
-      comment,
+      content: comment,
       firstName: user.firstName,
       lastName: user.lastName,
+      picturePath: user.picturePath,
     });
 
     const updatedPost = await Post.findByIdAndUpdate(
@@ -110,7 +136,7 @@ export const deletePost = async (req, res) => {
 
   Post.deleteOne({ _id: postId }, async (err) => {
     if (err) {
-      return console.log(err);
+      res.status(404).json({ message: err.message });
       // deleted at most one tank document
     } else {
       const posts = await Post.find();
