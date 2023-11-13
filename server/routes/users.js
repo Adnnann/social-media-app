@@ -1,22 +1,22 @@
 import express from "express";
 import {
-  getUser,
   getUserFriends,
   addRemoveFriend,
   viewProfile,
   getUsers,
+  getUserProfileAndPosts,
 } from "../controllers/users.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
 /* READ */
-router.get("/:id", verifyToken, getUser);
+router.get("/:userId", verifyToken, getUserProfileAndPosts);
 router.get("/:id/friends", verifyToken, getUserFriends);
 router.post("/search/:queryTerm", verifyToken, getUsers);
 
 /* UPDATE */
-router.patch("/:_id/:friendId", verifyToken, addRemoveFriend);
+router.patch("/:friendId/addFriend", verifyToken, addRemoveFriend);
 router.put("/:id/:userId", viewProfile);
 
 export default router;

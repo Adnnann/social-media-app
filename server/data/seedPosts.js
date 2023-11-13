@@ -27,10 +27,13 @@ const seedPosts = async () => {
           userId: users[Math.floor(Math.random() * users.length)]._id,
           firstName: users[Math.floor(Math.random() * users.length)].firstName,
           lastName: users[Math.floor(Math.random() * users.length)].lastName,
+          picturePath:
+            users[Math.floor(Math.random() * users.length)].picturePath,
         },
       ],
       comments: [
         {
+          _id: mongoose.Types.ObjectId(),
           userId: commentUser._id,
           firstName: commentUser.firstName,
           lastName: commentUser.lastName,
@@ -39,6 +42,7 @@ const seedPosts = async () => {
 
           likes: [
             {
+              _id: mongoose.Types.ObjectId(),
               userId: commentLikesUser._id,
               firstName: commentLikesUser.firstName,
               lastName: commentLikesUser.lastName,
@@ -48,6 +52,7 @@ const seedPosts = async () => {
 
           replies: [
             {
+              _id: mongoose.Types.ObjectId(),
               userId: repliesUser._id,
               firstName: repliesUser.firstName,
               lastName: repliesUser.lastName,

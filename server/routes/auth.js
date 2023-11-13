@@ -1,5 +1,5 @@
 import express from "express";
-import { login } from "../controllers/auth.js";
+import { login, logout } from "../controllers/auth.js";
 import User from "../models/User.js";
 import { jwtDecode } from "jwt-decode";
 
@@ -17,4 +17,5 @@ router.get("/checkToken", async (req, res) => {
   return res.status(200).send(false);
 });
 
+router.post("/logout", logout);
 export default router;

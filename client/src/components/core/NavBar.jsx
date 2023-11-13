@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { Search, DarkMode, LightMode, Menu, Close } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
-import { setMode } from "state/authReducer";
+import { resetAuthStore, setMode } from "state/authReducer";
 
 import {
   setLogout,
@@ -25,6 +25,7 @@ import {
   setSearch,
   setFilteredUsers,
   getUserFullName,
+  resetUserStore,
 } from "state/userReducer";
 
 import { useNavigate } from "react-router-dom";
@@ -37,6 +38,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getToken } from "state/authReducer";
 import { useMutation } from "@tanstack/react-query";
 import { searchUsersApi } from "api/usersMutations";
+import Friend from "components/users/Friend";
+import FriendRequests from "components/friends/FriendRequest";
 
 const Navbar = () => {
   const [isMobileMenuToggled, setIsMobileMenuToggled] = useState(false);
@@ -45,6 +48,8 @@ const Navbar = () => {
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
   const search = useSelector((state) => state.user.search);
   const queryClient = useQueryClient();
+  const mode = useSelector((state) => state.auth.mode);
+  const [openFriendRequests, setOpenFriendRequests] = useState(false);
 
   const theme = useTheme();
   const neutralLight = theme.palette.neutral.light;
@@ -53,19 +58,37 @@ const Navbar = () => {
   const primaryLight = theme.palette.primary.light;
   const alt = theme.palette.background.alt;
 
-  const userData = useSelector(getUserProfile);
+  const userProfile = useSelector((state) => state.user.userProfile);
   const token = useSelector(getToken);
   const [queryTerm, setQueryTerm] = useState("");
-  const fullName = useSelector(getUserFullName);
+  const fullName = useSelector(
+    (state) =>
+      state.user.userProfile.firstName + " " + state.user.userProfile.lastName
+  );
 
   const messages = useSelector((state) => state.user.messages);
 
   const userId = useSelector((state) => state.user.userId);
 
-  const logout = () => {
+  console.log(userProfile);
+
+  const logout = async () => {
     queryClient.removeQueries();
-    dispatch(setLogout());
-    navigate("/");
+    axios
+      .post("/auth/logout", {
+        withCredentials: true,
+      })
+      .then((res) => {
+        localStorage.setItem("mode", mode);
+        dispatch(resetAuthStore());
+        dispatch(resetUserStore());
+
+        navigate("/");
+        window.location.reload();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   const {
@@ -95,7 +118,7 @@ const Navbar = () => {
   };
 
   const navigateToChat = () => {
-    const receiverId = userData._id;
+    const receiverId = userProfile._id;
     try {
       axios
         .get(`http://localhost:5000/chat/${receiverId}/receiveMessage`, {
@@ -106,12 +129,25 @@ const Navbar = () => {
         })
         .then((res) => {
           dispatch(setMessages(res.data));
-          navigate(`/chat/${userData._id}`);
+          navigate(`/chat/${userProfile._id}`);
         });
     } catch (err) {
       console.log(err);
     }
   };
+
+  const setUserPreferredMode = () => {
+    dispatch(setMode(mode === "dark" ? "light" : "dark"));
+    localStorage.setItem("mode", mode);
+  };
+
+  const [anchor, setAnchor] = useState(null);
+
+  const handleClick = (event) => {
+    setAnchor(anchor ? null : event.currentTarget);
+  };
+
+  const open = Boolean(anchor);
 
   return (
     <FlexBetween padding="1rem 6%" backgroundColor={alt}>
@@ -196,11 +232,21 @@ const Navbar = () => {
       {/* DESKTOP NAV */}
       {isNonMobileScreens ? (
         <FlexBetween>
-          <IconButton onClick={navigateToChat}>
-            <Badge badgeContent={6} color="error">
+          <IconButton onClick={() => navigate("/friendRequests")}>
+            <Badge
+              badgeContent={
+                userProfile.friends.length > 0
+                  ? userProfile?.friends?.filter(
+                      (friend) => !friend.friendRequestAccepted
+                    ).length
+                  : null
+              }
+              color="error"
+            >
               <ChatIcon />
             </Badge>
           </IconButton>
+
           <IconButton
             style={{ marginRight: "20px" }}
             onClick={() => navigate("/userChats")}
@@ -220,7 +266,7 @@ const Navbar = () => {
             </Badge>
           </IconButton>
           <Typography>{fullName}</Typography>
-          <IconButton onClick={() => dispatch(setMode())}>
+          <IconButton onClick={setUserPreferredMode}>
             {theme.palette.mode === "dark" ? (
               <DarkMode sx={{ fontSize: "25px" }} />
             ) : (

@@ -1,13 +1,15 @@
+import Post from "../models/Post.js";
 import User from "../models/User.js";
 import { jwtDecode } from "jwt-decode";
 
 /* READ */
-export const getUser = async (req, res) => {
+export const getUserProfileAndPosts = async (req, res) => {
   try {
-    const id = jwtDecode(req.cookies.token).id;
+    const { userId } = req.params;
 
-    const user = await User.findById(id);
-    res.status(200).json(user);
+    const user = await User.findById(userId);
+    const posts = await Post.find({ userId: userId });
+    res.status(200).json({ user, posts });
   } catch (err) {
     res.status(404).json({ error: err.message });
   }
@@ -16,28 +18,18 @@ export const getUser = async (req, res) => {
 export const getUserFriends = async (req, res) => {
   try {
     const id = jwtDecode(req.cookies.token).id;
+
     const user = await User.findById(id);
 
-    const newFriends = {
-      _id: user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      occupation: user.occupation,
-      location: user.location,
-      picturePath: user.picturePath,
-    };
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    } else {
+      const userFriends = user.friends.filter(
+        (user) => user.friendRequestAccepted === false
+      );
 
-    if (user.friends.filter((user) => user._id === newFriends._id).length > 0) {
-      return res.status(200).json(user.friends);
+      res.status(200).json(userFriends);
     }
-
-    user.friends = user.friends.filter((user) => user._id !== user._id);
-
-    user.friends = [...user.friends, newFriends];
-
-    await user.save();
-
-    res.status(200).json(user.friends);
   } catch (err) {
     res.status(404).json({ message: err.message });
   }
@@ -45,38 +37,77 @@ export const getUserFriends = async (req, res) => {
 
 /* UPDATE */
 export const addRemoveFriend = async (req, res) => {
+  const { friendId } = req.params;
+  const userId = jwtDecode(req.cookies.token).id;
+  const friend = await User.findById(friendId);
+  const user = await User.findById(userId);
+
+  console.log(friend);
+
   try {
-    const { friendId } = req.params;
-
-    const userId = jwtDecode(req.cookies.token).id;
-
-    const user = await User.findById(userId);
-    const friend = await User.findById(friendId);
-
-    user.friends = user.friends.filter((user) => user._id.toString() !== _id);
-
-    if (user.friends.filter((user) => user._id === friendId).length > 0) {
-      user.friends = user.friends.filter((user) => user._id !== friendId);
-    } else {
-      user.friends = [
-        ...user.friends.filter((user) => user._id.toString() !== _id),
-        {
-          _id: friendId,
-          firstName: friend.firstName,
-          lastName: friend.lastName,
-          occupation: friend.occupation,
-          location: friend.location,
-          picturePath: friend.picturePath,
+    await User.findByIdAndUpdate(
+      {
+        _id: friendId,
+      },
+      {
+        $push: {
+          friends: {
+            userId: userId,
+            friendRequestAccepted: false,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            picturePath: user.picturePath,
+            occupation: user.occupation,
+            friendRequestStatus: "pending",
+          },
         },
-      ];
-    }
+      },
+      { new: true }
+    );
 
-    await user.save();
+    await User.findByIdAndUpdate(
+      {
+        _id: userId,
+      },
+      {
+        $push: {
+          friends: {
+            userId: friendId,
+            friendRequestAccepted: false,
+            firstName: friend.firstName,
+            lastName: friend.lastName,
+            picturePath: friend.picturePath,
+            occupation: friend.occupation,
+            friendRequestStatus: "pending",
+          },
+        },
+      },
+      { new: true }
+    );
 
-    return res.status(200).json(user);
+    const updatedUser = await User.findById(userId);
+
+    res.status(200).json(updatedUser);
   } catch (err) {
     res.status(404).json({ message: err.message });
   }
+};
+
+export const acceptFriendRequest = async (req, res) => {
+  const { friendId } = req.body;
+  const userId = jwtDecode(req.cookies.token).id;
+
+  await User.findByIdAndUpdate(
+    {
+      _id: userId,
+      "friends._id": friendId,
+    },
+    {
+      $set: {
+        "friends.$.friendRequestAccepted": true,
+      },
+    }
+  );
 };
 
 export const viewProfile = async (req, res) => {

@@ -8,6 +8,8 @@ import _ from "lodash";
 import { CircularProgress, Grid } from "@mui/material";
 
 const Posts = ({ socket }) => {
+  const dispatch = useDispatch();
+
   const {
     data: posts,
     isLoading: isLoadingPosts,
@@ -18,6 +20,10 @@ const Posts = ({ socket }) => {
     queryKey: ["posts"],
     queryFn: () => getPostsApi(),
   });
+
+  useEffect(() => {
+    dispatch(setPosts(posts));
+  }, [isSuccessPosts]);
 
   if (isLoadingPosts) {
     return (
@@ -36,6 +42,8 @@ const Posts = ({ socket }) => {
   if (isErrorPosts) {
     return <div>{error.message}</div>;
   }
+
+  console.log(posts);
 
   return (
     <>
@@ -65,7 +73,8 @@ const Posts = ({ socket }) => {
                 likes={likes}
                 comments={comments}
                 socket={socket}
-                likesCount={likes.length || 0}
+                likeId={likes._id}
+                likeCount={likes.length || 0}
               />
             )
           )

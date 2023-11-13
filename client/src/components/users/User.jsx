@@ -15,7 +15,7 @@ import axios from "axios";
 import { getUserId } from "state/userReducer";
 import { getToken } from "state/authReducer";
 
-const User = ({ picturePath }) => {
+const User = ({ userId, picturePath }) => {
   const [user, setUser] = useState(null);
   const { palette } = useTheme();
   const navigate = useNavigate();
@@ -23,7 +23,8 @@ const User = ({ picturePath }) => {
   const dark = palette.neutral.dark;
   const medium = palette.neutral.medium;
   const main = palette.neutral.main;
-  const userId = useSelector(getUserId);
+
+  console.log(user);
 
   console.log(userId);
 
@@ -48,7 +49,7 @@ const User = ({ picturePath }) => {
   const { firstName, lastName, location, occupation, impressions } = user;
 
   const viewUserProfile = () => {
-    axios.put(`http://localhost:5000/users/${userId}/${viewerId}`, {
+    axios.put(`/users/${userId}/${viewerId}`, {
       visitingUserId: viewerId,
     });
 

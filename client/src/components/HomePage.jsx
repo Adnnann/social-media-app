@@ -36,6 +36,7 @@ const HomePage = ({ socket }) => {
   });
 
   useEffect(() => {
+    if (!socket) return;
     socket.emit("login", {
       firstName,
       lastName,

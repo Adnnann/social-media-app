@@ -9,8 +9,8 @@ export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setMode: (state) => {
-      state.mode = state.mode === "light" ? "dark" : "light";
+    setMode: (state, action) => {
+      state.mode = action.payload;
     },
     setToken: (state, action) => {
       state.token = action.payload;
@@ -18,10 +18,14 @@ export const authSlice = createSlice({
     setTokenToNull: (state) => {
       Object.assign(state, initialState);
     },
+    resetAuthStore: (state) => {
+      Object.assign(state, initialState);
+    },
   },
 });
 
 export const getToken = (state) => state.auth.token;
 
-export const { setMode, setToken, setTokenToNull } = authSlice.actions;
+export const { setMode, setToken, setTokenToNull, resetAuthStore } =
+  authSlice.actions;
 export default authSlice.reducer;

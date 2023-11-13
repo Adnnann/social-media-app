@@ -1,5 +1,12 @@
 import { ShareOutlined, QuestionAnswerOutlined } from "@mui/icons-material";
-import { IconButton, Typography, useTheme } from "@mui/material";
+import {
+  Avatar,
+  AvatarGroup,
+  IconButton,
+  Tooltip,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import FlexBetween from "components/utils/FlexBetween";
 import Friend from "components/users/Friend";
 import WidgetWrapper from "components/utils/WidgetWrapper";
@@ -20,7 +27,8 @@ import CommentAndDeletePosts from "./CommentAndDeleteButtons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getToken } from "state/authReducer";
-import { getPostsApi } from "api/postsQuery";
+import Popup from "components/utils/Popup";
+import PopupComponent from "components/utils/Popup";
 
 const Post = ({
   postId,
@@ -33,17 +41,20 @@ const Post = ({
   likes,
   comments,
   socket,
-  likesCount,
+  likeId,
+  likeCount,
 }) => {
   const token = useSelector(getToken);
   const userId = useSelector(getUserId);
   const queryClient = useQueryClient();
+  const friends = useSelector((state) => state.user.friendsIDs);
+
+  console.log("friends", friends);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const isLiked = Boolean(likes[userId]);
-  const likeCount = Object.keys(likes).length;
   const [comment, setComment] = useState("");
 
   const { palette } = useTheme();
@@ -64,13 +75,13 @@ const Post = ({
   const { mutate: like } = useMutation({
     mutationKey: "posts",
     invalidatesTags: ["posts"],
-    mutationFn: () => likePost(postId, userId),
+    mutationFn: (postId, likeId) => likePost(postId, likeId),
     onSuccess: () => {
       queryClient.invalidateQueries("posts");
     },
   });
 
-  const { mutate: commentPost, isSuccess: isSuccessComment } = useMutation({
+  const { mutate: commentPost } = useMutation({
     mutationKey: "posts",
     invalidatesTags: ["posts"],
     mutationFn: async () => {
@@ -78,8 +89,7 @@ const Post = ({
       return await commentPostMutation(postId, userId, comment);
     },
 
-    onSuccess: (data) => {
-      console.log("data", data);
+    onSuccess: () => {
       queryClient.invalidateQueries("posts");
       setComment("");
     },
@@ -120,15 +130,13 @@ const Post = ({
     }
   };
 
-  let replies = [];
-  for (let i = 0; i < 2; i++) {
-    replies.push({
-      firstName: "John",
-      lastName: "Doe",
-      content: "Hello",
-      picturePath: "p7.jpeg",
-    });
-  }
+  const [anchor, setAnchor] = useState(null);
+
+  const handleClick = (event) => {
+    setAnchor(anchor ? null : event.currentTarget);
+  };
+
+  const open = Boolean(anchor);
 
   return (
     <WidgetWrapper m="2rem 0">
@@ -161,23 +169,54 @@ const Post = ({
           />
           {postUserId !== userId && (
             <LikeCommentButton
-              likeComment={() => like(postId, userId)}
+              likeComment={() => like({ postId, likeId, userId })}
               color={isLiked ? primary : main}
-              isLiked={isLiked}
               likeCount={likeCount}
+              isLiked={isLiked}
+              margin={"20px"}
             />
           )}
-          {userId !== postUserId && (
+
+          {userId !== postUserId && friends.includes(postUserId) ? (
             <IconButton onClick={startChat}>
               <QuestionAnswerOutlined />
             </IconButton>
-          )}
+          ) : null}
         </FlexBetween>
 
-        <IconButton>
+        <IconButton onClick={handleClick}>
           <ShareOutlined />
         </IconButton>
       </FlexBetween>
+      {open ? <PopupComponent anchor={anchor} /> : null}
+      <Typography
+        component={"p"}
+        sx={{ marginRight: "20px", marginTop: "20px" }}
+      >
+        Likes
+      </Typography>
+      <div style={{ display: "flex", marginTop: "10px", marginBottom: "10px" }}>
+        <AvatarGroup
+          max={20}
+          sx={{
+            "& .MuiAvatar-root": { width: 24, height: 24, fontSize: 15 },
+          }}
+          spacing="medium"
+        >
+          {likes.length > 0
+            ? likes.map((item) => {
+                return (
+                  <Tooltip title={item.firstName + " " + item.lastName}>
+                    <Avatar
+                      src={`http://localhost:5000/assets/${item.picturePath}`}
+                      sx={{ width: 20, height: 20 }}
+                    />
+                  </Tooltip>
+                );
+              })
+            : null}
+        </AvatarGroup>
+      </div>
       {isComments && (
         <CommentPost
           comment={comment}
@@ -186,8 +225,8 @@ const Post = ({
           comments={comments}
           name={name}
           main={main}
-          replies={replies}
           like={like}
+          postId={postId}
         />
       )}
     </WidgetWrapper>

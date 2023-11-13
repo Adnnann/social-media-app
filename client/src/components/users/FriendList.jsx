@@ -8,23 +8,20 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFriends } from "api/friendsQuery";
 import { getToken } from "state/authReducer";
 
-const FriendList = () => {
+const FriendList = ({ userId }) => {
   const dispatch = useDispatch();
   const { palette } = useTheme();
-  const token = useSelector(getToken);
-  const userId = useSelector(getUserId);
-  const queryClient = useQueryClient;
+
   const friends = useSelector((state) => state.user.friends);
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { isLoading, isError, error } = useQuery({
     queryKey: ["friends"],
     queryFn: () => getFriends(userId),
     onSuccess: (data) => {
+      console.log(data);
       dispatch(setFriends(data));
     },
   });
-
-  console.log("friends", friends);
 
   if (isError) {
     return <div>{error.message}</div>;
@@ -54,7 +51,10 @@ const FriendList = () => {
       <Box display="flex" flexDirection="column" gap="1.5rem">
         {friends && friends.length > 0
           ? friends
-              .filter((friend) => friend._id !== userId)
+              .filter(
+                (friend) =>
+                  friend._id !== userId && friend.acceptedFriendRequest
+              )
               .map((friend) => (
                 <Friend
                   key={friend._id}

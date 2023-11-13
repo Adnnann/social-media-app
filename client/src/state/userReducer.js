@@ -16,7 +16,9 @@ const initialState = {
   search: false,
   filteredUsers: [],
   friends: [],
-  friendIDs: [],
+  friendsIDs: [],
+  viewedUserProfile: null,
+  viewedUserProfilePosts: [],
 };
 
 const userSlice = createSlice({
@@ -33,9 +35,8 @@ const userSlice = createSlice({
       Object.assign(state, initialState);
     },
     setFriends: (state, action) => {
-      console.log("action.payload", action.payload);
       state.friends = action.payload;
-      state.friendIDs = action.payload.map((friend) => friend._id);
+      state.friendsIDs = action.payload.map((friend) => friend._id);
     },
     setPosts: (state, action) => {
       state.posts = action.payload;
@@ -47,9 +48,6 @@ const userSlice = createSlice({
       });
       state.posts = updatedPosts;
     },
-    setSocket: (state, action) => {
-      state.socket = action.payload;
-    },
     setMessageSendersVisibility: (state) => {
       state.showMessageSenders = !state.showMessageSenders;
     },
@@ -57,17 +55,21 @@ const userSlice = createSlice({
       state.chatParams = action.payload;
     },
     setMessages: (state, action) => {
-      if (action.payload.filter(Boolean).length === 0) {
-        return;
-      } else {
-        state.messages = action.payload;
-      }
+      state.messages = action.payload;
     },
     setSearch: (state, action) => {
       state.search = action.payload;
     },
     setFilteredUsers: (state, action) => {
       state.filteredUsers = action.payload;
+    },
+    viewUserProfile: (state, action) => {
+      state.viewedUserProfile = action.payload.user;
+      state.viewedUserProfilePosts = action.payload.posts;
+    },
+
+    resetUserStore: (state) => {
+      Object.assign(state, initialState);
     },
   },
 });
@@ -84,12 +86,13 @@ export const {
   setPosts,
   setPost,
   setUserData,
-  setSocket,
   setMessageSendersVisibility,
   setMessages,
   setSearch,
   setFilteredUsers,
   setChatParams,
+  viewUserProfile,
+  resetUserStore,
 } = userSlice.actions;
 
 export default userSlice.reducer;

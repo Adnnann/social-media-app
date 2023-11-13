@@ -4,8 +4,11 @@ import {
   getUserPosts,
   likePost,
   commentPost,
-  deletePost,
   createPost,
+  replyToComment,
+  deleteCommentReply,
+  likeReplyToComment,
+  likeComment,
 } from "../controllers/posts.js";
 import { verifyToken } from "../middleware/auth.js";
 
@@ -19,9 +22,13 @@ router.get("/:userId/posts", verifyToken, getUserPosts);
 router.post("/createPost", verifyToken, createPost);
 
 /* UPDATE */
-router.patch("/:postId/like", verifyToken, likePost);
+router.patch("/likePost", verifyToken, likePost);
 router.patch("/:id/comment", verifyToken, commentPost);
 
-router.delete("/:postId/deletePost", verifyToken, deletePost);
+router.patch("/likeComment", verifyToken, likeComment);
+router.patch("/replyToComment", verifyToken, replyToComment);
+router.patch("/likeReplyToComment", verifyToken, likeReplyToComment);
+
+router.patch("/deleteCommentReply", verifyToken, deleteCommentReply);
 
 export default router;

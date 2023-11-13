@@ -9,13 +9,13 @@ import { addFriendMutation } from "api/friendsMutations";
 import { useMutation } from "@tanstack/react-query";
 import { getToken } from "state/authReducer";
 
-const Friend = ({ friendId, name, subtitle, userPicturePath, id }) => {
+const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userId = useSelector(getUserId);
-  const friendsIDs = useSelector((state) => state.user.friendIDs);
+  const friends = useSelector((state) => state.user.friends);
 
-  let isFriend = friendsIDs.includes(friendId);
+  //let friend = friends.filter((friend) => friend._id === friendId);
 
   const { palette } = useTheme();
   const primaryLight = palette.primary.light;
@@ -30,7 +30,7 @@ const Friend = ({ friendId, name, subtitle, userPicturePath, id }) => {
   } = useMutation({
     mutationKey: "friends",
     invalidatesTags: ["friends"],
-    mutationFn: () => addFriendMutation(userId, friendId),
+    mutationFn: () => addFriendMutation(friendId),
 
     onSuccess: (data) => {
       dispatch(setUserData(data));
@@ -49,7 +49,6 @@ const Friend = ({ friendId, name, subtitle, userPicturePath, id }) => {
         <Box
           onClick={() => {
             navigate(`/profile/${friendId}`);
-            navigate(0);
           }}
         >
           <Typography
@@ -72,14 +71,15 @@ const Friend = ({ friendId, name, subtitle, userPicturePath, id }) => {
       </FlexBetween>
       {friendId !== userId && window.location.pathname !== "/messages" ? (
         <IconButton
-          onClick={() => addFriend()}
+          onClick={() => addFriend(friendId)}
           sx={{ backgroundColor: primaryLight, p: "0.6rem" }}
         >
-          {isFriend ? (
+          <PersonAddOutlined sx={{ color: primaryDark }} />
+          {/* {isFriend ? (
             <PersonRemoveOutlined sx={{ color: primaryDark }} />
           ) : (
             <PersonAddOutlined sx={{ color: primaryDark }} />
-          )}
+          )} */}
         </IconButton>
       ) : null}
     </FlexBetween>

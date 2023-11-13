@@ -1,38 +1,40 @@
 import { Box, useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import Navbar from "components/core/NavBar";
+
 import FriendList from "components/users/FriendList";
 import MyPost from "components/posts/MyPost";
 import Posts from "components/posts/Posts";
 import User from "components/users/User";
-import { getToken } from "state/authReducer";
+
+import axios from "axios";
+import { viewUserProfile } from "state/userReducer";
+import Friend from "./Friend";
+import Post from "components/posts/Post";
 
 const ProfilePage = () => {
-  const [user, setUser] = useState(null);
   const { userId } = useParams();
-  const token = useSelector(getToken);
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
+  const userProfile = useSelector((state) => state.user.viewedUserProfile);
+  const userPosts = useSelector((state) => state.user.viewedUserProfilePosts);
+  const dispatch = useDispatch();
+  const loggedUser = useSelector((state) => state.user.userProfile);
 
-  const getUser = async () => {
-    const response = await fetch(`/users/${userId}`, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
+  const getUserProfileAndPosts = async () => {
+    const response = await axios.get(`/users/${userId}`, {
+      withCredentials: true,
     });
-    const data = await response.json();
-    setUser(data);
+    const data = await response.data;
+    dispatch(viewUserProfile(data));
   };
 
   useEffect(() => {
-    getUser();
+    getUserProfileAndPosts();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  if (!user) return null;
 
   return (
     <Box>
-      <Navbar />
       <Box
         width="100%"
         padding="2rem 6%"
@@ -41,17 +43,54 @@ const ProfilePage = () => {
         justifyContent="center"
       >
         <Box flexBasis={isNonMobileScreens ? "26%" : undefined}>
-          <User userId={userId} picturePath={user.picturePath} />
+          {userProfile?._id && (
+            <User
+              userId={userProfile._id}
+              picturePath={userProfile.picturePath}
+            />
+          )}
+
           <Box m="2rem 0" />
-          <FriendList userId={userId} />
+
+          {userProfile?.friends &&
+            userProfile.friends.length > 0 &&
+            userProfile.friends.map((friend) => (
+              <Friend
+                key={friend._id}
+                id={friend._id}
+                friendId={friend._id}
+                name={`${friend.firstName} ${friend.lastName}`}
+                subtitle={friend.occupation}
+                userPicturePath={friend.picturePath}
+              />
+            ))}
         </Box>
         <Box
           flexBasis={isNonMobileScreens ? "42%" : undefined}
           mt={isNonMobileScreens ? undefined : "2rem"}
         >
-          <MyPost picturePath={user.picturePath} />
+          <MyPost picturePath={loggedUser.picturePath} />
           <Box m="2rem 0" />
-          <Posts userId={userId} isProfile />
+          {Object.values(userPosts).length > 0
+            ? userPosts.map((item) => {
+                return (
+                  <Post
+                    key={item._id}
+                    postId={item._id}
+                    postUserId={item.userId}
+                    name={`${item.firstName} ${item.lastName}`}
+                    description={item.description}
+                    location={item.location}
+                    picturePath={item.picturePath}
+                    userPicturePath={item.userPicturePath}
+                    likes={item.likes}
+                    comments={item.comments}
+                    socket={item.socket}
+                    likesCount={item.likes.length || 0}
+                  />
+                );
+              })
+            : null}
         </Box>
       </Box>
     </Box>

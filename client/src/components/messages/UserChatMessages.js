@@ -70,7 +70,7 @@ export const UserChatMessages = ({ socket }) => {
     };
   }, [socket, message.length, dispatch, messageSent, chatParticipants]);
 
-  const messages = useSelector((state) => state.messages);
+  const messages = useSelector((state) => state.user.messages);
 
   const handleMessages = (e) => {
     setMessage(e.target.value);
@@ -130,6 +130,7 @@ export const UserChatMessages = ({ socket }) => {
           {userData?.friends && userData.friends.length > 0
             ? userData.friends.map((user, index) => (
                 <CardHeader
+                  id={user.picturePath + index}
                   avatar={
                     <Avatar
                       alt="Remy Sharp"
@@ -182,6 +183,7 @@ export const UserChatMessages = ({ socket }) => {
                       message.senderId === chatParticipants.senderId ||
                       message.senderId === chatParticipants.receiverId
                   )
+                  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                   .map((message, index) => (
                     <>
                       {console.log(message)}

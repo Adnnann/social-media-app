@@ -52,15 +52,28 @@ export const login = async (req, res) => {
 
     delete user.password;
 
+    user.friends = user.friends.filter((friend) =>
+      Boolean(friend.friendRequestAccepted)
+    );
+
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({ user, token });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/* LOGGING OUT */
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie("token").status(200).json({ message: "Logged out" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

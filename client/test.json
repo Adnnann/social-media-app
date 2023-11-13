@@ -1,0 +1,57 @@
+{
+  "_id": "654fe54066130f06a02f7032",
+  "userId": "65451ce9badb9637d9314151",
+  "firstName": "Jonathan",
+  "lastName": "Patterson",
+  "location": "Los Angeles, CA",
+  "description": "This is a test post",
+  "picturePath": "post1.jpeg",
+  "userPicturePath": "p7.jpeg",
+  "likes": [
+    {
+      "userId": "65451ce9badb9637d931415c",
+      "firstName": "Gregory",
+      "lastName": "Murray"
+    }
+  ],
+  "comments": [
+    {
+      "_id": "654fe54066130f06a02f6fa2",
+      "userId": "65451ce9badb9637d9314111",
+      "firstName": "Alan",
+      "lastName": "Bell",
+      "content": "This is a 78 test comment from Alan",
+      "picturePath": "p7.jpeg",
+      "likes": [
+        {
+          "_id": "654fe54066130f06a02f6fa3",
+          "userId": "65451ce9badb9637d9314106",
+          "firstName": "Whatcha",
+          "lastName": "Doing",
+          "picturePath": "p7.jpeg"
+        }
+      ],
+      "replies": [
+        {
+          "_id": "654fe54066130f06a02f6fa4",
+          "userId": "65451ce9badb9637d931414a",
+          "firstName": "Jack",
+          "lastName": "Nguyen",
+          "content": "This is a 78 test reply from Jack",
+          "picturePath": "p7.jpeg",
+          "likes": [
+            {
+              "_id": "654fe54efbea1297e3daa068",
+              "userName": "Marina",
+              "lastName": "Ovcina",
+              "picturePath": "p9.jpeg"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "__v": 0,
+  "createdAt": "2023-11-11T20:34:08.065Z",
+  "updatedAt": "2023-11-11T20:53:11.958Z"
+}

@@ -29,10 +29,39 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    friends: {
-      type: Array,
-      default: [],
-    },
+    friends: [
+      {
+        userId: {
+          type: String,
+          required: true,
+        },
+        firstName: {
+          type: String,
+          required: true,
+        },
+        lastName: {
+          type: String,
+          required: true,
+        },
+
+        picturePath: {
+          type: String,
+          required: true,
+        },
+        occupation: {
+          type: String,
+          required: true,
+        },
+        friendRequestAccepted: {
+          type: Boolean,
+          default: false,
+        },
+        friendRequestStatus: {
+          type: String,
+          default: "",
+        },
+      },
+    ],
     location: String,
     occupation: String,
     viewedProfile: {
